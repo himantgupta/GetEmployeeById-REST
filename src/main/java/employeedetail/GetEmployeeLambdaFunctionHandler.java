@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -15,9 +19,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
+import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, RequestHandler<Object, Object>{
-
 
     private DynamoDB dynamoDb;
     private String DYNAMODB_TABLE_NAME = "Employee";
@@ -36,12 +41,20 @@ public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, R
        String id = json.path("params").path("querystring").path("id").asText();
        
        DynamoDBMapper mapper = new DynamoDBMapper(client);
-       Employee itemObj = mapper.load(Employee.class, Integer.parseInt(id), "Active");
+       
+       Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+       eav.put(":val1", new AttributeValue().withN(id));
+       eav.put(":val2", new AttributeValue().withS("Active"));
+
+       DynamoDBQueryExpression<Employee> queryExpression = new DynamoDBQueryExpression<Employee>()
+           .withKeyConditionExpression("employeeId = :val1").withFilterExpression("employeeStatus = :val2").withExpressionAttributeValues(eav);
+       PaginatedQueryList<Employee> itemObj = mapper.query(Employee.class, queryExpression);
+       
        try {
-    	   if (itemObj !=null)
-    		   outputStream.write(itemObj.toString().getBytes(Charset.forName("UTF-8")));
+    	   if (itemObj !=null && itemObj.size()>0)
+    		   outputStream.write(itemObj.get(0).toString().getBytes(Charset.forName("UTF-8")));
     	   else
-    		   outputStream.write("The employee is INACTIVE or does not exist in database.".getBytes(Charset.forName("UTF-8")));
+    		   outputStream.write("The employee is Inactive or does not exist in database.".getBytes(Charset.forName("UTF-8")));
        } catch (IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
