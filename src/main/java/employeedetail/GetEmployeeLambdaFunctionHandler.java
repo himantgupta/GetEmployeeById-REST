@@ -19,11 +19,11 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, RequestHandler<Object, Object>{
 
 
-	private DynamoDB dynamoDb;
+    private DynamoDB dynamoDb;
     private String DYNAMODB_TABLE_NAME = "Employee";
     private Regions REGION = Regions.US_WEST_2;
     private AmazonDynamoDBClient client;
-    List<Employee> response;
+   
     
     ///////////////////////////////////////////////////////////////////////////////////////////
     @Override
@@ -38,7 +38,10 @@ public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, R
        DynamoDBMapper mapper = new DynamoDBMapper(client);
        Employee itemObj = mapper.load(Employee.class, Integer.parseInt(id), "Active");
        try {
-		outputStream.write(itemObj.toString().getBytes(Charset.forName("UTF-8")));
+    	   if (itemObj !=null)
+    		   outputStream.write(itemObj.toString().getBytes(Charset.forName("UTF-8")));
+    	   else
+    		   outputStream.write("The employee is INACTIVE or does not exist in database.".getBytes(Charset.forName("UTF-8")));
        } catch (IOException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
