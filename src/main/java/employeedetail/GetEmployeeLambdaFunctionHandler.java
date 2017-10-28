@@ -50,15 +50,14 @@ public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, R
            .withKeyConditionExpression("employeeId = :val1").withFilterExpression("employeeStatus = :val2").withExpressionAttributeValues(eav);
        PaginatedQueryList<Employee> itemObj = mapper.query(Employee.class, queryExpression);
        
-       try {
+      try {
     	   if (itemObj !=null && itemObj.size()>0)
-    		   outputStream.write(itemObj.get(0).toString().getBytes(Charset.forName("UTF-8")));
+    		   outputStream.write(new ResponseMessage(itemObj.get(0).toString()).toString().getBytes(Charset.forName("UTF-8")));
     	   else
-    		   outputStream.write("The employee is Inactive or does not exist in database.".getBytes(Charset.forName("UTF-8")));
+    		   outputStream.write(new ResponseMessage("The employee is Inactive or does not exist in database.").toString().getBytes(Charset.forName("UTF-8")));
        } catch (IOException e) {
-		// TODO Auto-generated catch block
 		e.printStackTrace();
-       }    
+       }     
        
     }
     
