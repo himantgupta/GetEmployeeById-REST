@@ -17,7 +17,7 @@ public class ResponseMessage {
 	
 	@Override
     public String toString() {
-    	String response = " { Message:" + this.getMessage() + "}"; 
+    	String response = " { \"Message\":\"" + this.getMessage() + "\"}"; 
     	return response;
     }
 }

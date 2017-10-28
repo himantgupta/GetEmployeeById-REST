@@ -24,7 +24,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.PaginatedQueryList;
 
 public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, RequestHandler<Object, Object>{
 
-    private DynamoDB dynamoDb;
+
+	private DynamoDB dynamoDb;
     private String DYNAMODB_TABLE_NAME = "Employee";
     private Regions REGION = Regions.US_WEST_2;
     private AmazonDynamoDBClient client;
@@ -50,14 +51,15 @@ public class GetEmployeeLambdaFunctionHandler implements RequestStreamHandler, R
            .withKeyConditionExpression("employeeId = :val1").withFilterExpression("employeeStatus = :val2").withExpressionAttributeValues(eav);
        PaginatedQueryList<Employee> itemObj = mapper.query(Employee.class, queryExpression);
        
-      try {
+       try {
     	   if (itemObj !=null && itemObj.size()>0)
     		   outputStream.write(new ResponseMessage(itemObj.get(0).toString()).toString().getBytes(Charset.forName("UTF-8")));
     	   else
     		   outputStream.write(new ResponseMessage("The employee is Inactive or does not exist in database.").toString().getBytes(Charset.forName("UTF-8")));
        } catch (IOException e) {
+		// TODO Auto-generated catch block
 		e.printStackTrace();
-       }     
+       }    
        
     }
     
